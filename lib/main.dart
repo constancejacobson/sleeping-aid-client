@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import './customization.dart';
 
@@ -52,6 +53,25 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static const platform = const MethodChannel('samples.flutter.dev/sound');
+
+  String _soundClassification = 'Unknown sound classification.';
+
+  Future<void> _getSoundClassification() async {
+    String soundClassification;
+    try {
+      final int result = await platform.invokeMethod('getSoundClassification');
+      soundClassification = 'Sound classification: $result % .';
+    } on PlatformException catch (e) {
+      soundClassification =
+          "Failed to get sound classification: '${e.message}'.";
+    }
+
+    setState(() {
+      _soundClassification = soundClassification;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -66,7 +86,17 @@ class _MyHomePageState extends State<MyHomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body:
-            Padding(padding: const EdgeInsets.all(8), child: Customization()));
+        body: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              children: [
+                Customization(),
+                ElevatedButton(
+                  child: Text('Get Sound Classification'),
+                  onPressed: _getSoundClassification,
+                ),
+                Text(_soundClassification),
+              ],
+            )));
   }
 }
